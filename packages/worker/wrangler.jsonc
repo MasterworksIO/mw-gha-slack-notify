@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mw-gha-slack-notify",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-03-24",
+  "observability": {
+    "enabled": true,
+    "traces": { "enabled": true },
+  },
+  "durable_objects": { "bindings": [{ "name": "SLACK_NOTIFY", "class_name": "SlackNotifyDO" }] },
+  "worker_loaders": [{ "binding": "LOADER" }],
+  "migrations": [{ "tag": "v1", "new_classes": ["SlackNotifyDO"] }],
+  "routes": [{ "pattern": "slack-notify.masterworks.dev", "custom_domain": true }],
+}

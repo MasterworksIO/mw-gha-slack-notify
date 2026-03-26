@@ -35,6 +35,7 @@ export interface RunState {
   message_ts: string | null
   channel: string
   renderer_code: string | null
+  job_order: string[]
   workflow_run: WorkflowRun
   repository: Repository
   jobs: Record<string, WorkflowJob>

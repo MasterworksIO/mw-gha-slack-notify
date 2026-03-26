@@ -27,10 +27,21 @@ export function buildRendererInput(state: RunState): RendererInput {
     }
   }
 
+  // Sort jobs by their position in the workflow YAML definition
+  const patterns = state.job_order.map((p) => new RegExp(p))
+  const sortIndex = (name: string) => {
+    const idx = patterns.findIndex((p) => p.test(name))
+    return idx === -1 ? patterns.length : idx
+  }
+
   return {
     workflow_run: state.workflow_run,
     repository: state.repository,
-    jobs: [...byName.values()].sort((a, b) => a.created_at.localeCompare(b.created_at)),
+    jobs: [...byName.values()].sort((a, b) => {
+      const order = sortIndex(a.name) - sortIndex(b.name)
+      if (order !== 0) return order
+      return a.name.localeCompare(b.name)
+    }),
     deployments: state.deployments ?? {},
   }
 }

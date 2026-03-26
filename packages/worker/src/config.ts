@@ -5,6 +5,7 @@ import type { Env } from './types.ts'
 export interface ParsedConfig {
   channel: string
   renderer_code: string | null
+  job_order: string[]
   cached_at: number
 }
 
@@ -32,6 +33,7 @@ export async function getWorkflowConfig(
 
   const doc = parseYaml(yamlContent, { schema: 'failsafe' }) as {
     env?: Record<string, string>
+    jobs?: Record<string, { name?: string }>
   } | null
   const channel = doc?.env?.['SLACK_NOTIFY_CHANNEL']
   if (!channel) return null
@@ -40,7 +42,15 @@ export async function getWorkflowConfig(
   if (rendererPath?.includes('..')) return null
   const renderer_code = rendererPath ? await fetchFileContent(token, repo, rendererPath, sha) : null
 
-  const result: ParsedConfig = { channel, renderer_code, cached_at: Date.now() }
+  const jobs = doc?.jobs ?? {}
+  const job_order = Object.keys(jobs).map((key) => {
+    const name = jobs[key]?.name ?? key
+    const parts = name.split(/\$\{\{[^}]*\}\}/)
+    const escaped = parts.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    return `^${escaped.join('.+')}( \\(.*\\))?$`
+  })
+
+  const result: ParsedConfig = { channel, renderer_code, job_order, cached_at: Date.now() }
   await storage.put(cacheKey, result)
   return result
 }

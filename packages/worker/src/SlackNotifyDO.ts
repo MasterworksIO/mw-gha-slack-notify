@@ -239,6 +239,7 @@ export class SlackNotifyDO extends DurableObject<Env> {
       message_ts: null,
       channel: config.channel,
       renderer_code: config.renderer_code,
+      job_order: config.job_order,
       workflow_run,
       repository,
       jobs: {},
